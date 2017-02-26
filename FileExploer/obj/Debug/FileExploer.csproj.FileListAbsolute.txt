@@ -1,0 +1,8 @@
+F:\code\c#\FileExploer\FileExploer\bin\Debug\FileExploer.exe
+F:\code\c#\FileExploer\FileExploer\bin\Debug\FileExploer.pdb
+F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.csprojResolveAssemblyReference.cache
+F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.Properties.Resources.resources
+F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.csproj.GenerateResource.Cache
+F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.exe
+F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.pdb
+F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.Form1.resources
