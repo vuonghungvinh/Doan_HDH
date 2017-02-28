@@ -33,12 +33,21 @@
             this.treeDriver = new System.Windows.Forms.TreeView();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.lvcontainer = new System.Windows.Forms.ListView();
             this.imglistview = new System.Windows.Forms.ImageList(this.components);
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
+            this.lvcontainer = new System.Windows.Forms.ListView();
+            this.next = new System.Windows.Forms.PictureBox();
+            this.back = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.next)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.back)).BeginInit();
             this.SuspendLayout();
             // 
             // treeDriver
@@ -50,7 +59,7 @@
             this.treeDriver.Name = "treeDriver";
             this.treeDriver.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.treeDriver.SelectedImageIndex = 0;
-            this.treeDriver.Size = new System.Drawing.Size(211, 356);
+            this.treeDriver.Size = new System.Drawing.Size(210, 319);
             this.treeDriver.TabIndex = 2;
             this.treeDriver.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeDriver_BeforeExpand);
             this.treeDriver.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeDriver_AfterSelect);
@@ -87,21 +96,9 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.lvcontainer);
-            this.splitContainer1.Size = new System.Drawing.Size(635, 356);
-            this.splitContainer1.SplitterDistance = 211;
+            this.splitContainer1.Size = new System.Drawing.Size(633, 319);
+            this.splitContainer1.SplitterDistance = 210;
             this.splitContainer1.TabIndex = 3;
-            // 
-            // lvcontainer
-            // 
-            this.lvcontainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvcontainer.LargeImageList = this.imglistview;
-            this.lvcontainer.Location = new System.Drawing.Point(0, 0);
-            this.lvcontainer.Name = "lvcontainer";
-            this.lvcontainer.ShowItemToolTips = true;
-            this.lvcontainer.Size = new System.Drawing.Size(420, 356);
-            this.lvcontainer.TabIndex = 0;
-            this.lvcontainer.UseCompatibleStateImageBehavior = false;
-            this.lvcontainer.DoubleClick += new System.EventHandler(this.lvcontainer_DoubleClick);
             // 
             // imglistview
             // 
@@ -109,12 +106,88 @@
             this.imglistview.ImageSize = new System.Drawing.Size(48, 48);
             this.imglistview.TransparentColor = System.Drawing.Color.Transparent;
             // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.next);
+            this.panel1.Controls.Add(this.back);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(635, 35);
+            this.panel1.TabIndex = 4;
+            // 
+            // panel2
+            // 
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.splitContainer1);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel2.Location = new System.Drawing.Point(0, 35);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(635, 321);
+            this.panel2.TabIndex = 5;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.PaleVioletRed;
+            this.label1.Location = new System.Drawing.Point(86, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(95, 17);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Mycomputer";
+            // 
+            // lvcontainer
+            // 
+            this.lvcontainer.BackgroundImage = global::FileExploer.Properties.Resources.hinh_dep_1;
+            this.lvcontainer.BackgroundImageTiled = true;
+            this.lvcontainer.CheckBoxes = true;
+            this.lvcontainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvcontainer.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lvcontainer.ForeColor = System.Drawing.SystemColors.Info;
+            this.lvcontainer.LargeImageList = this.imglistview;
+            this.lvcontainer.Location = new System.Drawing.Point(0, 0);
+            this.lvcontainer.MultiSelect = false;
+            this.lvcontainer.Name = "lvcontainer";
+            this.lvcontainer.ShowItemToolTips = true;
+            this.lvcontainer.Size = new System.Drawing.Size(419, 319);
+            this.lvcontainer.SmallImageList = this.imglistview;
+            this.lvcontainer.TabIndex = 0;
+            this.lvcontainer.UseCompatibleStateImageBehavior = false;
+            this.lvcontainer.DoubleClick += new System.EventHandler(this.lvcontainer_DoubleClick);
+            // 
+            // next
+            // 
+            this.next.Cursor = System.Windows.Forms.Cursors.No;
+            this.next.Image = global::FileExploer.Properties.Resources.next;
+            this.next.Location = new System.Drawing.Point(43, 0);
+            this.next.Name = "next";
+            this.next.Size = new System.Drawing.Size(37, 32);
+            this.next.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.next.TabIndex = 1;
+            this.next.TabStop = false;
+            this.next.Click += new System.EventHandler(this.next_Click);
+            // 
+            // back
+            // 
+            this.back.Cursor = System.Windows.Forms.Cursors.No;
+            this.back.Image = global::FileExploer.Properties.Resources.back;
+            this.back.Location = new System.Drawing.Point(0, 0);
+            this.back.Name = "back";
+            this.back.Size = new System.Drawing.Size(37, 32);
+            this.back.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.back.TabIndex = 0;
+            this.back.TabStop = false;
+            this.back.Click += new System.EventHandler(this.pictureBox1_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(635, 356);
-            this.Controls.Add(this.splitContainer1);
+            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "FileExploer";
@@ -123,6 +196,11 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.next)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.back)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -134,6 +212,11 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.ListView lvcontainer;
         private System.Windows.Forms.ImageList imglistview;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.PictureBox back;
+        private System.Windows.Forms.PictureBox next;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Label label1;
     }
 }
 

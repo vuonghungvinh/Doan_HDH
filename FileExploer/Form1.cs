@@ -6,12 +6,17 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace FileExploer
 {
     public partial class Form1 : Form
     {
+        Thread thread;
+        bool isread = false;
+        List<String> links = new List<string>();
+        int index = -1;
         public Form1()
         {
             InitializeComponent();
@@ -64,6 +69,7 @@ namespace FileExploer
 
         private void treeDriver_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
+            treeDriver.UseWaitCursor = true;
             if (e.Node.Nodes.Count > 0)
             {
                 if (e.Node.Nodes[0].Text == "..." && e.Node.Nodes[0].Tag == null)
@@ -86,8 +92,8 @@ namespace FileExploer
                             if (di.GetDirectories().Count() > 0)
                                 node.Nodes.Add(null, "...", 8, 8);
                         }
-                        catch (UnauthorizedAccessException) 
-                        { 
+                        catch (UnauthorizedAccessException)
+                        {
                             //if an unauthorized access exception occured display a locked folder
                             node.ImageIndex = 5;
                             node.SelectedImageIndex = 5;
@@ -104,6 +110,7 @@ namespace FileExploer
                     }
                 }
             }
+            treeDriver.UseWaitCursor = false;
         }
 
         private void splitContainer1_Panel1_Paint(object sender, PaintEventArgs e)
@@ -112,9 +119,9 @@ namespace FileExploer
         }
         private String processsize(long size)
         {
-            if (size/(1024.0 * 1024 * 1024)>1)
+            if (size / (1024.0 * 1024 * 1024) > 1)
             {
-                Decimal rs = size/(Decimal)(1024.0 * 1024 * 1024);
+                Decimal rs = size / (Decimal)(1024.0 * 1024 * 1024);
                 rs = Math.Round(rs, 2);
                 return rs.ToString() + " GB";
             }
@@ -123,7 +130,8 @@ namespace FileExploer
                 Decimal rs = size / (Decimal)(1024 * 1024);
                 rs = Math.Round(rs, 2);
                 return rs.ToString() + " MB";
-            } else if (size / (1024.0 ) > 1)
+            }
+            else if (size / (1024.0) > 1)
             {
                 Decimal rs = size / (Decimal)(1024);
                 rs = Math.Round(rs, 2);
@@ -138,13 +146,32 @@ namespace FileExploer
         {
             int k = 0;
             string fi;
-            imglistview.Images.Clear();
-            lvcontainer.Clear();
+            //isread = true;
+            label1.Invoke(new Action(() =>
+            {
+                label1.Text = path;
+            }));
+            lvcontainer.Invoke(new Action(() =>
+            {
+                lvcontainer.UseWaitCursor = true;
+                lvcontainer.Clear();
+            }));
+            //lvcontainer.UseWaitCursor = true;
             try
             {
                 foreach (string d in Directory.GetDirectories(path))
                 {
-                    imglistview.Images.Add(k.ToString(), SpyIcon.GetIcon(d));
+                    lvcontainer.Invoke(new Action(() =>
+                    {
+                        try
+                        {
+                            imglistview.Images.Add(k.ToString(), SpyIcon.GetIcon(d));
+                        }
+                        catch (Exception ex)
+                        {
+                            imglistview.Images.Add(k.ToString(), imageList1.Images[8]);
+                        }
+                    }));
                     fi = d.Substring(Directory.GetParent(d).ToString().Length + 1);//Lấy tên file
                     ListViewItem item = new ListViewItem(fi, k);//Tạo item mới
                     FileInfo finfo = new FileInfo(d);
@@ -157,8 +184,12 @@ namespace FileExploer
                         item.ToolTipText = "created: " + finfo.CreationTime.ToString() + "\n Size: None";
                     }
                     item.Tag = d;//Đánh dấu đường dẫn file cho item
-                    lvcontainer.Items.Add(item);//Thêm item vào listview
+                    lvcontainer.Invoke(new Action(() =>
+                    {
+                        lvcontainer.Items.Add(item);//Thêm item vào listview
+                    }));
                     k++;
+                    Thread.Sleep(1);
                 }
             }
             catch (Exception ex)
@@ -172,11 +203,17 @@ namespace FileExploer
                     Icon ic = SpyIcon.GetIcon(f);
                     if (ic != null)
                     {
-                        imglistview.Images.Add(k.ToString(), ic);
+                        lvcontainer.Invoke(new Action(() =>
+                        {
+                            imglistview.Images.Add(k.ToString(), ic);
+                        }));
                     }
                     else
                     {
-                        imglistview.Images.Add(k.ToString(), Icon.FromHandle(((Bitmap)imageList1.Images[0]).GetHicon()));
+                        lvcontainer.Invoke(new Action(() =>
+                        {
+                            imglistview.Images.Add(k.ToString(), Icon.FromHandle(((Bitmap)imageList1.Images[8]).GetHicon()));
+                        }));
                     }
                     FileInfo finfo = new FileInfo(f);
                     fi = f.Substring(Directory.GetParent(f).ToString().Length + 1);//Lấy tên file
@@ -191,18 +228,26 @@ namespace FileExploer
                     }
                     //item.ToolTipText = "created: " + finfo.CreationTime.ToString() + "\n Size: " + (di.TotalSize.ToString());
                     item.Tag = f;//Đánh dấu đường dẫn file cho item
-                    lvcontainer.Items.Add(item);//Thêm item vào listview
+                    lvcontainer.Invoke(new Action(() =>
+                    {
+                        lvcontainer.Items.Add(item);//Thêm item vào listview
+                    }));
                     k++;
+                    Thread.Sleep(1);
                 }
             }
             catch (Exception ex)
             {
 
             }
+            lvcontainer.Invoke(new Action(() =>
+            {
+                lvcontainer.UseWaitCursor = false;
+            }));
         }
         private void treeDriver_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void lvcontainer_DoubleClick(object sender, EventArgs e)
@@ -210,14 +255,48 @@ namespace FileExploer
             FileAttributes attr = File.GetAttributes(lvcontainer.SelectedItems[0].Tag.ToString());
             if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
             {
-                showListFile(lvcontainer.SelectedItems[0].Tag.ToString());
+                imglistview.Images.Clear();
+                if (thread != null)
+                {
+                    thread.Abort();
+                    thread = null;
+                    //thread.Abort();
+                }
+                String path = "";
+                lvcontainer.Invoke(new Action(() =>
+                {
+                    path = lvcontainer.SelectedItems[0].Tag.ToString();
+                }));
+                List<String> tmp = new List<string>();
+                for (int i = 0; i < links.Count; i++)
+                {
+                    if (links.ElementAt(i).Equals(label1.Text))
+                    {
+                        tmp.Add(links.ElementAt(i));
+                        break;
+                    }
+                    tmp.Add(links.ElementAt(i));
+                }
+                links = tmp;
+                links.Add(path);
+                index = links.Count - 1;
+                back.Cursor = Cursors.No;
+                next.Cursor = Cursors.No;
+                if (links.Count > 1)
+                {
+                    back.Cursor = Cursors.Hand;
+                }
+                thread = new Thread(() => showListFile(path));
+                thread.Start();
+                //showListFile(lvcontainer.SelectedItems[0].Tag.ToString());
             }
             else
             {
                 try
                 {
                     System.Diagnostics.Process.Start(lvcontainer.SelectedItems[0].Tag.ToString());
-                } catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     MessageBox.Show("Can't open file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     System.Diagnostics.Process.Start(new FileInfo(lvcontainer.SelectedItems[0].Tag.ToString()).Directory.FullName);
@@ -233,7 +312,50 @@ namespace FileExploer
                 TreeViewHitTestInfo info = treeDriver.HitTest(treeDriver.PointToClient(Cursor.Position));
                 if (info != null && info.Node.Tag != "con")
                 {
-                    showListFile(info.Node.Tag.ToString());
+                    if (thread != null && thread.IsAlive)
+                    {
+                        thread.Abort();
+                    }
+                    imglistview.Images.Clear();
+                    thread = new Thread(() => showListFile(info.Node.Tag.ToString()));
+                    thread.Start();
+                    links.Add(info.Node.Tag.ToString());
+                    index = links.Count - 1;
+                    back.Cursor = Cursors.No;
+                    next.Cursor = Cursors.No;
+                    if (links.Count > 1)
+                    {
+                        back.Cursor = Cursors.Hand;
+                    }
+                    //showListFile(info.Node.Tag.ToString());
+                }
+            }
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            if (links.Count > 1 && index > 0)
+            {
+                thread = new Thread(() => showListFile(links.ElementAt(--index)));
+                thread.Start();
+                next.Cursor = Cursors.Hand;
+                if (index <= 1)
+                {
+                    back.Cursor = Cursors.No;
+                }
+            }
+        }
+
+        private void next_Click(object sender, EventArgs e)
+        {
+            if (links.Count > 1 && index < links.Count-1)
+            {
+                thread = new Thread(() => showListFile(links.ElementAt(++index)));
+                thread.Start();
+                back.Cursor = Cursors.Hand;
+                if (index >= (links.Count-1))
+                {
+                    next.Cursor = Cursors.No;
                 }
             }
         }
