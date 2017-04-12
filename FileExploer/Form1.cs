@@ -13,7 +13,11 @@ namespace FileExploer
 {
     public partial class Form1 : Form
     {
+        bool iscopy = false;
+        bool iscut = false;
         Thread thread;
+        String frompath = "";
+        String topath = "";
         bool isread = false;
         List<String> links = new List<string>();
         int index = -1;
@@ -156,6 +160,9 @@ namespace FileExploer
                 lvcontainer.UseWaitCursor = true;
                 lvcontainer.Clear();
             }));
+            int len = 10;
+            int dem = 0;
+            ListViewItem[] lvi = new ListViewItem[len];
             //lvcontainer.UseWaitCursor = true;
             try
             {
@@ -184,10 +191,18 @@ namespace FileExploer
                         item.ToolTipText = "created: " + finfo.CreationTime.ToString() + "\n Size: None";
                     }
                     item.Tag = d;//Đánh dấu đường dẫn file cho item
-                    lvcontainer.Invoke(new Action(() =>
+                    lvi.SetValue(item, dem++);
+                    if (dem > len-1)
                     {
-                        lvcontainer.Items.Add(item);//Thêm item vào listview
-                    }));
+                        lvcontainer.Invoke(new Action(() =>
+                        {
+                            lvcontainer.Items.AddRange(lvi);
+                            lvi = new ListViewItem[len];
+                            dem = 0;
+                            //lvcontainer.Items.Add(item);//Thêm item vào listview
+                        }));
+                    }
+                    
                     k++;
                     Thread.Sleep(1);
                 }
@@ -228,10 +243,21 @@ namespace FileExploer
                     }
                     //item.ToolTipText = "created: " + finfo.CreationTime.ToString() + "\n Size: " + (di.TotalSize.ToString());
                     item.Tag = f;//Đánh dấu đường dẫn file cho item
-                    lvcontainer.Invoke(new Action(() =>
+                    lvi.SetValue(item, dem++);
+                    if (dem > len-1)
                     {
-                        lvcontainer.Items.Add(item);//Thêm item vào listview
-                    }));
+                        lvcontainer.Invoke(new Action(() =>
+                        {
+                            lvcontainer.Items.AddRange(lvi);
+                            lvi = new ListViewItem[len];
+                            dem = 0;
+                            //lvcontainer.Items.Add(item);//Thêm item vào listview
+                        }));
+                    }
+                    //lvcontainer.Invoke(new Action(() =>
+                    //{
+                     //   lvcontainer.Items.Add(item);//Thêm item vào listview
+                    ///}));
                     k++;
                     Thread.Sleep(1);
                 }
@@ -239,6 +265,20 @@ namespace FileExploer
             catch (Exception ex)
             {
 
+            }
+            if (dem > 0)
+            {
+                lvcontainer.Invoke(new Action(() =>
+                {
+                    ListViewItem[] tmp = new ListViewItem[dem];
+                    for (int i = 0; i < dem; i++)
+                    {
+                        tmp.SetValue(lvi.GetValue(i), i);
+                    }
+                    lvcontainer.Items.AddRange(tmp);
+                    dem = 0;
+                    //lvcontainer.Items.Add(item);//Thêm item vào listview
+                }));
             }
             lvcontainer.Invoke(new Action(() =>
             {
@@ -358,6 +398,87 @@ namespace FileExploer
                     next.Cursor = Cursors.No;
                 }
             }
+        }
+
+        private void lvcontainer_MouseDown(object sender, MouseEventArgs e)
+        {
+            bool match = false;
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                foreach (ListViewItem item in lvcontainer.Items)
+                {
+                    if (item.Bounds.Contains(new Point(e.X, e.Y)))
+                    {
+                        MenuItem[] mi = new MenuItem[] { new MenuItem("Copy"), new MenuItem("Cut"), new MenuItem("Paste") };
+                        FileAttributes attr = File.GetAttributes(item.Tag.ToString());
+                        if (!iscopy && !iscut || !((attr & FileAttributes.Directory) == FileAttributes.Directory))
+                        {
+                            mi[2].Enabled = false;
+                            frompath = item.Tag.ToString();
+                        }
+                        else
+                        {
+                            mi[2].Click += item_Click;
+                            topath = item.Tag.ToString();
+                        }
+                        lvcontainer.ContextMenu = new ContextMenu(mi);
+                        mi[0].Click +=  item_Click;
+                        mi[1].Click += item_Click;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void item_Click(Object sender, EventArgs e)
+        {
+            MenuItem mi = (MenuItem)sender;
+            if (mi.Text.ToLower().Equals("copy"))
+            {
+                iscopy = true;
+                iscut = false;
+            }
+            else if (mi.Text.ToLower().Equals("cut"))
+            {
+                iscopy = true;
+                iscut = false;
+            }
+            else if (mi.Text.ToLower().Equals("paste"))
+            {
+                Console.Write(frompath);
+                Console.Write(topath);
+                FileAttributes attr = File.GetAttributes(topath);
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    try
+                    {
+                        if (iscut)
+                        {
+                            System.IO.File.Move(@frompath, @topath);
+                        }
+                        if (iscopy)
+                        {
+                            System.IO.File.Copy(@frompath, @topath, true);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        String message = "cut";
+                        if (iscopy)
+                        {
+                            message = "coppy";
+                        }
+                        Console.Write(ex.Message);
+                        MessageBox.Show("Can't " +message+ " file or folder", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        private void cutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
