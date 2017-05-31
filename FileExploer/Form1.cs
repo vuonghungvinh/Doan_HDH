@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -157,6 +158,7 @@ namespace FileExploer
             }));
             lvcontainer.Invoke(new Action(() =>
             {
+                imglistview.Images.Clear();
                 lvcontainer.UseWaitCursor = true;
                 lvcontainer.Clear();
             }));
@@ -179,7 +181,7 @@ namespace FileExploer
                             imglistview.Images.Add(k.ToString(), imageList1.Images[8]);
                         }
                     }));
-                    fi = d.Substring(Directory.GetParent(d).ToString().Length + 1);//Lấy tên file
+                    fi = Path.GetFileName(d);//Lấy tên file
                     ListViewItem item = new ListViewItem(fi, k);//Tạo item mới
                     FileInfo finfo = new FileInfo(d);
                     try
@@ -231,7 +233,7 @@ namespace FileExploer
                         }));
                     }
                     FileInfo finfo = new FileInfo(f);
-                    fi = f.Substring(Directory.GetParent(f).ToString().Length + 1);//Lấy tên file
+                    fi = Path.GetFileName(f);//Lấy tên file
                     ListViewItem item = new ListViewItem(fi, k);//Tạo item mới
                     try
                     {
@@ -403,29 +405,81 @@ namespace FileExploer
         private void lvcontainer_MouseDown(object sender, MouseEventArgs e)
         {
             bool match = false;
-
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                foreach (ListViewItem item in lvcontainer.Items)
+                if (lvcontainer.Items.Count < 1)
                 {
-                    if (item.Bounds.Contains(new Point(e.X, e.Y)))
+                    if (Directory.Exists(label1.Text))
                     {
-                        MenuItem[] mi = new MenuItem[] { new MenuItem("Copy"), new MenuItem("Cut"), new MenuItem("Paste") };
-                        FileAttributes attr = File.GetAttributes(item.Tag.ToString());
+                        MenuItem[] mi = new MenuItem[] { new MenuItem("Copy Ctrl+C"), new MenuItem("Cut Ctrl+X"), new MenuItem("Paste Ctrl+V"), new MenuItem("Refresh F5") };
+                        FileAttributes attr = File.GetAttributes(label1.Text);
                         if (!iscopy && !iscut || !((attr & FileAttributes.Directory) == FileAttributes.Directory))
                         {
+                            mi[0].Enabled = false;
+                            mi[1].Enabled = false;
                             mi[2].Enabled = false;
-                            frompath = item.Tag.ToString();
+                            mi[0].Click += item_Click;
+                            mi[1].Click += item_Click;
                         }
                         else
                         {
+                            mi[0].Enabled = false;
+                            mi[1].Enabled = false;
                             mi[2].Click += item_Click;
-                            topath = item.Tag.ToString();
+                            topath = label1.Text;
                         }
+                        mi[3].Click += item_Click;
                         lvcontainer.ContextMenu = new ContextMenu(mi);
-                        mi[0].Click +=  item_Click;
-                        mi[1].Click += item_Click;
-                        break;
+                    }
+                }
+                else
+                {
+                    bool ismatch = false;
+                    foreach (ListViewItem item in lvcontainer.Items)
+                    {
+                        if (item.Bounds.Contains(new Point(e.X, e.Y)))
+                        {
+                            MenuItem[] mi = new MenuItem[] { new MenuItem("Copy Ctrl+C"), new MenuItem("Cut Ctrl+X"), new MenuItem("Paste Ctrl+V"), new MenuItem("Refresh F5") };
+                            FileAttributes attr = File.GetAttributes(item.Tag.ToString());
+                            if (!iscopy && !iscut || !((attr & FileAttributes.Directory) == FileAttributes.Directory))
+                            {
+                                mi[2].Enabled = false;
+                                frompath = item.Tag.ToString();
+                            }
+                            else
+                            {
+                                mi[2].Click += item_Click;
+                                topath = item.Tag.ToString();
+                            }
+                            lvcontainer.ContextMenu = new ContextMenu(mi);
+                            mi[0].Click += item_Click;
+                            mi[1].Click += item_Click;
+                            mi[3].Click += item_Click;
+                            ismatch = true;
+                            break;
+                        }
+                    }
+                    if (!ismatch)
+                    {
+                        MenuItem[] mi = new MenuItem[] { new MenuItem("Copy Ctrl+C"), new MenuItem("Cut Ctrl+X"), new MenuItem("Paste Ctrl+V"), new MenuItem("Refresh F5") };
+                        FileAttributes attr = File.GetAttributes(label1.Text);
+                        if (!iscopy && !iscut || !((attr & FileAttributes.Directory) == FileAttributes.Directory))
+                        {
+                            mi[0].Enabled = false;
+                            mi[1].Enabled = false;
+                            mi[2].Enabled = false;
+                            mi[0].Click += item_Click;
+                            mi[1].Click += item_Click;
+                        }
+                        else
+                        {
+                            mi[0].Enabled = false;
+                            mi[1].Enabled = false;
+                            mi[2].Click += item_Click;
+                            topath = label1.Text;
+                        }
+                        mi[3].Click += item_Click;
+                        lvcontainer.ContextMenu = new ContextMenu(mi);
                     }
                 }
             }
@@ -434,20 +488,18 @@ namespace FileExploer
         public void item_Click(Object sender, EventArgs e)
         {
             MenuItem mi = (MenuItem)sender;
-            if (mi.Text.ToLower().Equals("copy"))
+            if (mi.Text.ToLower().IndexOf("copy") >= 0)
             {
                 iscopy = true;
                 iscut = false;
             }
             else if (mi.Text.ToLower().Equals("cut"))
             {
-                iscopy = true;
-                iscut = false;
+                iscopy = false;
+                iscut = true;
             }
-            else if (mi.Text.ToLower().Equals("paste"))
+            else if (mi.Text.ToLower().IndexOf("paste") >= 0)
             {
-                Console.Write(frompath);
-                Console.Write(topath);
                 FileAttributes attr = File.GetAttributes(topath);
                 if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
                 {
@@ -455,11 +507,39 @@ namespace FileExploer
                     {
                         if (iscut)
                         {
-                            System.IO.File.Move(@frompath, @topath);
+                            if (System.IO.Directory.Exists(frompath))
+                            {
+                                //moveDirectory(frompath, topath);
+                                Microsoft.VisualBasic.FileIO.FileSystem.MoveFile(frompath, topath, Microsoft.VisualBasic.FileIO.UIOption.AllDialogs);
+                                showListFile(label1.Text);
+                            }
+                            if (System.IO.File.Exists(frompath))
+                            {
+                                String filename = Path.GetFileName(frompath);
+                                String to = System.IO.Path.Combine(topath, filename);
+                                Microsoft.VisualBasic.FileIO.FileSystem.MoveFile(frompath, to, Microsoft.VisualBasic.FileIO.UIOption.AllDialogs);
+                                //System.IO.File.Move(frompath, to);
+                                showListFile(label1.Text);
+                            }
                         }
                         if (iscopy)
                         {
-                            System.IO.File.Copy(@frompath, @topath, true);
+                            if (System.IO.Directory.Exists(frompath))
+                            {
+                                //copyDirectory(frompath, topath);
+                                String filename = Path.GetFileName(frompath);
+                                String to = System.IO.Path.Combine(topath, filename);
+                                Microsoft.VisualBasic.FileIO.FileSystem.CopyDirectory(frompath, to, Microsoft.VisualBasic.FileIO.UIOption.AllDialogs);
+                                showListFile(label1.Text);
+                            }
+                            if (System.IO.File.Exists(frompath))
+                            {
+                                String filename = Path.GetFileName(frompath);
+                                String to = System.IO.Path.Combine(topath, filename);
+                                //System.IO.File.Copy(frompath, to, true);
+                                Microsoft.VisualBasic.FileIO.FileSystem.CopyFile(frompath, to, Microsoft.VisualBasic.FileIO.UIOption.AllDialogs);
+                                showListFile(label1.Text);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -470,15 +550,198 @@ namespace FileExploer
                             message = "coppy";
                         }
                         Console.Write(ex.Message);
-                        MessageBox.Show("Can't " +message+ " file or folder", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        //MessageBox.Show("Can't " +message+ " file or folder", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
+            else if (mi.Text.ToLower().IndexOf("refresh") >= 0)
+            {
+                showListFile(label1.Text);
+            }
+        }
+
+        public void moveDirectory(string source, string target)
+        {
+            var sourcePath = source.TrimEnd('\\', ' ');
+            var targetPath = target.TrimEnd('\\', ' ');
+            string[] paths = sourcePath.Split('\\');
+            Console.WriteLine(paths[paths.Length - 1]);
+            targetPath = System.IO.Path.Combine(targetPath, paths[paths.Length - 1]);
+            var files = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
+                                 .GroupBy(s => Path.GetDirectoryName(s));
+            foreach (var folder in files)
+            {
+                var targetFolder = folder.Key.Replace(sourcePath, targetPath);
+                Directory.CreateDirectory(targetFolder);
+                foreach (var file in folder)
+                {
+                    var targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
+                    if (File.Exists(targetFile)) File.Delete(targetFile);
+                    File.Move(file, targetFile);
+                }
+            }
+            Directory.Delete(source, true);
+        }
+
+        private void copyDirectory(string strSource, string strDestination)
+        {
+            if (!Directory.Exists(strDestination))
+            {
+                Directory.CreateDirectory(strDestination);
+            }
+
+            DirectoryInfo dirInfo = new DirectoryInfo(strSource);
+            FileInfo[] files = dirInfo.GetFiles();
+            foreach (FileInfo tempfile in files)
+            {
+                tempfile.CopyTo(Path.Combine(strDestination, tempfile.Name));
+            }
+
+            DirectoryInfo[] directories = dirInfo.GetDirectories();
+            foreach (DirectoryInfo tempdir in directories)
+            {
+                copyDirectory(Path.Combine(strSource, tempdir.Name), Path.Combine(strDestination, tempdir.Name));
+            }
+
         }
 
         private void cutToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void pasteToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            Console.Write(frompath);
+            Console.Write(topath);
+        }
+
+        private void lvcontainer_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            e.Graphics.DrawString(e.Item.Text, label1.Font , Brushes.Black,
+            new RectangleF(e.Item.Position.X,
+                e.Item.Position.Y,
+                30,
+                160));
+        }
+
+        private void lvcontainer_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                if (lvcontainer.SelectedItems.Count > 0)
+                {
+                    frompath = (String)lvcontainer.SelectedItems[0].Tag;
+                    iscopy = true;
+                    iscut = false;
+                }
+                //MessageBox.Show("copy");
+            }
+
+            if (e.KeyCode == Keys.F5)
+            {
+                showListFile(label1.Text);
+            }
+
+            if (e.Control && e.KeyCode == Keys.X)
+            {
+                if (lvcontainer.SelectedItems.Count > 0)
+                {
+                    frompath = (String)lvcontainer.SelectedItems[0].Tag;
+                    iscopy = false;
+                    iscut = true;
+                }
+            }
+
+            if (e.Control && e.KeyCode == Keys.V)
+            {
+                if (lvcontainer.SelectedItems.Count > 0)
+                {
+                    topath = (String)lvcontainer.SelectedItems[0].Tag;
+                }
+                else
+                {
+                    topath = label1.Text;
+                }
+
+                try
+                {
+                    if (iscut)
+                    {
+                        bool iserror = true;
+                        if (File.Exists(topath))
+                        {
+                            iserror = false;
+                            topath = Directory.GetParent(topath).FullName;
+                        }
+                        if (Directory.Exists(topath))
+                        {
+                            iserror = false;
+                        }
+                        if (iserror)
+                        {
+                            return;
+                        }
+                        if (System.IO.Directory.Exists(frompath))
+                        {
+                            //moveDirectory(frompath, topath);
+                            Microsoft.VisualBasic.FileIO.FileSystem.MoveFile(frompath, topath, Microsoft.VisualBasic.FileIO.UIOption.AllDialogs);
+                            showListFile(label1.Text);
+                        }
+                        if (System.IO.File.Exists(frompath))
+                        {
+                            String filename = Path.GetFileName(frompath);
+                            String to = System.IO.Path.Combine(topath, filename);
+                            Microsoft.VisualBasic.FileIO.FileSystem.MoveFile(frompath, to, Microsoft.VisualBasic.FileIO.UIOption.AllDialogs);
+                            //System.IO.File.Move(frompath, to);
+                            showListFile(label1.Text);
+                        }
+                    }
+                    if (iscopy)
+                    {
+                        bool iserror = true;
+                        if (File.Exists(topath))
+                        {
+                            iserror = false;
+                            topath = Directory.GetParent(topath).FullName;
+                        }
+                        if (Directory.Exists(topath))
+                        {
+                            iserror = false;
+                        }
+                        if (iserror)
+                        {
+                            return;
+                        }
+                        if (System.IO.Directory.Exists(frompath))
+                        {
+                            //copyDirectory(frompath, topath);
+                            String filename = Path.GetFileName(frompath);
+                            String to = System.IO.Path.Combine(topath, filename);
+                            Microsoft.VisualBasic.FileIO.FileSystem.CopyDirectory(frompath, to, Microsoft.VisualBasic.FileIO.UIOption.AllDialogs);
+                            showListFile(label1.Text);
+                        }
+                        if (System.IO.File.Exists(frompath))
+                        {
+                            String filename = Path.GetFileName(frompath);
+                            String to = System.IO.Path.Combine(topath, filename);
+                            //System.IO.File.Copy(frompath, to, true);
+                            Microsoft.VisualBasic.FileIO.FileSystem.CopyFile(frompath, to, Microsoft.VisualBasic.FileIO.UIOption.AllDialogs);
+                            showListFile(label1.Text);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    String message = "cut";
+                    if (iscopy)
+                    {
+                        message = "coppy";
+                    }
+                    Console.Write(ex.Message);
+                    //MessageBox.Show("Can't " +message+ " file or folder", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }

@@ -6,3 +6,11 @@ F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.csproj.GenerateResource
 F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.exe
 F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.pdb
 F:\code\c#\FileExploer\FileExploer\obj\Debug\FileExploer.Form1.resources
+E:\code\c#\Doan_HDH\FileExploer\obj\Debug\FileExploer.exe
+E:\code\c#\Doan_HDH\FileExploer\obj\Debug\FileExploer.pdb
+E:\code\c#\Doan_HDH\FileExploer\bin\Debug\FileExploer.exe
+E:\code\c#\Doan_HDH\FileExploer\bin\Debug\FileExploer.pdb
+E:\code\c#\Doan_HDH\FileExploer\obj\Debug\FileExploer.csprojResolveAssemblyReference.cache
+E:\code\c#\Doan_HDH\FileExploer\obj\Debug\FileExploer.Form1.resources
+E:\code\c#\Doan_HDH\FileExploer\obj\Debug\FileExploer.Properties.Resources.resources
+E:\code\c#\Doan_HDH\FileExploer\obj\Debug\FileExploer.csproj.GenerateResource.Cache
